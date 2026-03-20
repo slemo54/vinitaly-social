@@ -19,6 +19,24 @@ import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
+type PostStatus = 'draft' | 'scheduled' | 'published' | 'failed' | 'pending_approval'
+
+interface Post {
+  id: string
+  content: string
+  status: PostStatus
+  created_at: string
+  social_accounts: { account_name: string; platform: string } | null
+}
+
+interface SocialAccount {
+  id: string
+  platform: string
+  account_name: string
+  status: string
+  followers_count: number | null
+}
+
 const platformIcon = (platform: string) => {
   if (platform === 'facebook') return <Facebook className="h-3.5 w-3.5 text-blue-400" />
   return <Instagram className="h-3.5 w-3.5 text-pink-400" />
@@ -56,9 +74,9 @@ export default async function DashboardPage() {
       .limit(5),
   ])
 
-  const posts = postsResult.data || []
-  const accounts = accountsResult.data || []
-  const recentPosts = recentPostsResult.data || []
+  const posts = (postsResult.data || []) as { status: string }[]
+  const accounts = (accountsResult.data || []) as SocialAccount[]
+  const recentPosts = (recentPostsResult.data || []) as Post[]
 
   const stats = {
     total: posts.length,
@@ -135,7 +153,7 @@ export default async function DashboardPage() {
                 </div>
               ) : (
                 recentPosts.map((post) => {
-                  const account = post.social_accounts as { account_name: string; platform: string } | null
+                  const account = post.social_accounts
                   return (
                     <div
                       key={post.id}
